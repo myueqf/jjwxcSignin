@@ -72,17 +72,14 @@ public class main implements ModInitializer {
             if (Config.TARGET_PLAYER_USERNAME.equalsIgnoreCase(playerName)) {
                 LOGGER.info("目标玩家 {} 已加入游戏，发送上次签到结果～", playerName);
                 SignInResult result = JjwxcSignInService.getLastSignInResult();
-                /**
-                 *overlay是false只发送给目标玩家嗷～
-                 * 如果想广播消息就改成true～（现在是true嗷）
-                 */
-                handler.player.sendMessage(Text.literal("§e[晋江签到结果]"), true);
-                handler.player.sendMessage(Text.literal("§a-> 签到状态：" + result.status()), true);
+
+                handler.player.sendMessage(Text.literal("§e[晋江签到结果]"), false);
+                handler.player.sendMessage(Text.literal("§a-> 签到状态：" + result.status()), false);
 
                 // 仅当签到成功时才显示月石和天数信息嗷～
                 if (result.successful()) {
-                    handler.player.sendMessage(Text.literal("§a-> 获得月石数量：" + result.coins() + "个"), true);
-                    handler.player.sendMessage(Text.literal("§a-> 连续签到天数：" + result.signDays() + "天"), true);
+                    handler.player.sendMessage(Text.literal("§a-> 获得月石数量：" + result.coins() + "个"), false);
+                    handler.player.sendMessage(Text.literal("§a-> 连续签到天数：" + result.signDays() + "天"), false);
                 }
             }
         });
