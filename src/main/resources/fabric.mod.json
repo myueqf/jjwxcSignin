@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "jjwxcsignin",
+  "version": "${version}",
+  "name": "jjwxcSignin",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/jjwxcsignin/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "fabric-datagen": [
+      "io.github.myueqf.jjwxcsignin.client.mainDataGenerator"
+    ],
+    "main": [
+      "io.github.myueqf.jjwxcsignin.main"
+    ]
+  },
+  "mixins": [
+    "jjwxcsignin.mixins.json",
+    {
+      "config": "jjwxcsignin.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
