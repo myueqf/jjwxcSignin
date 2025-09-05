@@ -8,7 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -71,16 +73,46 @@ public class main implements ModInitializer {
             String playerName = handler.player.getGameProfile().getName();
             if (Config.TARGET_PLAYER_USERNAME.equalsIgnoreCase(playerName)) {
                 LOGGER.info("目标玩家 {} 已加入游戏，发送上次签到结果～", playerName);
-                SignInResult result = JjwxcSignInService.getLastSignInResult();
+                new Thread(() -> {
+                    try {
+                        JjwxcBookListApi.BookListRoot bookList = JjwxcBookListApi.getBooksList();
+                        // if (bookList != null && "200".equals(bookList.code) && bookList.data != null && bookList.data.novels != null) {
+                        if ("200".equals(bookList.code) && bookList.data != null) {
+                            String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                            handler.player.sendMessage(Text.literal("   "), false);
+                            handler.player.sendMessage(Text.literal("§b==> §6今日限免："), false);
+                            handler.player.sendMessage(Text.literal(String.format("§7[限免日期: %s]", currentDate)), false);
 
-                handler.player.sendMessage(Text.literal("§e[晋江签到结果]"), false);
-                handler.player.sendMessage(Text.literal("§a-> 签到状态：" + result.status()), false);
+                            for (JjwxcBookListApi.NovelData novel : bookList.data.novels) {
+                                if ("1".equals(novel.nowFree)) {
+                                    handler.player.sendMessage(Text.literal("§8---"), false);
+                                    handler.player.sendMessage(Text.literal(String.format("§a -> §f%s §7作者: §e%s", novel.novelName, novel.authorName)), false);
+                                    String intro = !novel.novelIntroShortUpper.isEmpty() ? novel.novelIntroShortUpper : novel.novelIntro;
+                                    handler.player.sendMessage(Text.literal(String.format("§7简介: %s", intro)), false);
+                                    handler.player.sendMessage(Text.literal(String.format("§7标签: §d%s", novel.tags)), false);
+                                    handler.player.sendMessage(Text.literal(String.format("§7%s", novel.novelClass)), false);
+                                }
+                            }
+                        } else {
+                            LOGGER.warn("获取今日限免书籍列表失败QAQ");
+                            handler.player.sendMessage(Text.literal("§c获取今日限免书籍列表失败QAQ"), false);
+                        }
+                        SignInResult result = JjwxcSignInService.getLastSignInResult();
 
-                // 仅当签到成功时才显示月石和天数信息嗷～
-                if (result.successful()) {
-                    handler.player.sendMessage(Text.literal("§a-> 获得月石数量：" + result.coins() + "个"), false);
-                    handler.player.sendMessage(Text.literal("§a-> 连续签到天数：" + result.signDays() + "天"), false);
-                }
+                        handler.player.sendMessage(Text.literal("§8---"), false);
+                        handler.player.sendMessage(Text.literal("§e[晋江签到结果]"), false);
+                        handler.player.sendMessage(Text.literal("§a -> 签到状态：" + "§6" + result.status()), false);
+
+                        // 仅当签到成功时才显示月石和天数信息嗷～
+                        if (result.successful()) {
+                            handler.player.sendMessage(Text.literal("§a -> 获得月石数量：" + result.coins() + "个"), false);
+                            handler.player.sendMessage(Text.literal("§a -> 连续签到天数：" + result.signDays() + "天"), false);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("获取播报信息时发生错误QAQ", e);
+                        handler.player.sendMessage(Text.literal("§c获取播报信息时发生错误QAQ"), false);
+                    }
+                }).start();
             }
         });
     }
